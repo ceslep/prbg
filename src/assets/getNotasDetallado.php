@@ -1,7 +1,7 @@
 <?php
 require_once "../datos_conexion.php";
 
-define('DEBUG_MODE', true); // Set to true to output SQL for debugging, false for normal operation
+define('DEBUG_MODE', false); // Set to true to output SQL for debugging, false for normal operation
 
 $allowed_origins = [
     "http://localhost:5173",
@@ -103,7 +103,16 @@ $resultDocente = $stmt->get_result();
 $docenteData = $resultDocente->fetch_assoc();
 $nombres = $docenteData['nombres'];
 $idDocente = $docenteData['identificacion'];
+$resultDocente->free(); // Explicitly free the result set
 $stmt->close();
+
+// Clear any pending results from the connection before preparing the next statement
+while ($mysqli->next_result()) {
+    // This loop consumes any remaining result sets
+    // from previous queries on the connection.
+    // We don't need to do anything with the results here, just consume them.
+}
+
 $unionSqls = [];
 $all_params = [];
 $param_types_string = '';
@@ -133,9 +142,10 @@ if (DEBUG_MODE) {
     exit();
 }
 
-$stmt = $mysqli->prepare($fullSql);
-$stmt->bind_param($param_types_string, ...$all_params);
-$result = $stmt->get_result();
+$stmtNotas = $mysqli->prepare($fullSql);
+$stmtNotas->bind_param($param_types_string, ...$all_params);
+$stmtNotas->execute(); // ¡Añadida la llamada a execute()!
+$result = $stmtNotas->get_result();
 $datos = [];
 while ($dato = $result->fetch_assoc()) {
     if ($dato["Nota"] != "0.00") {
@@ -144,6 +154,7 @@ while ($dato = $result->fetch_assoc()) {
         $datos[] = array("Valoracion" => $dato["valoracion"], "Nota" => $dato["Nota"], "Aspecto" => $dato["Aspecto"], "FechaAspecto" => $dato["mesA"] . ' ' . $dato["diaA"], "FechaNota" => $dato["mes"] . ' ' . $dato["dia"], "Porcentaje" => $dato["Porcentaje"], "Docente" => $dato['nombres'], "fechaHora" => $dato["fechahora"], "periodo" => $dato["periodo"], "elDocente" => $dato['idDocente'], "nnota" => $dato['nnota']);
     }
 }
-$stmt->close();echo json_encode($datos);
+$stmtNotas->close(); // Cerrar la segunda sentencia
+echo json_encode($datos);
 $result->free();
 $mysqli->close();

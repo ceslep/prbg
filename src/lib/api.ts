@@ -1,5 +1,5 @@
-import { GET_CONCENTRADOR_ENDPOINT, GET_ASIGNACIONES_ENDPOINT } from '../../constants'
-import type { ConcentradorParsed } from './types' // Import ConcentradorParsed
+import { GET_CONCENTRADOR_ENDPOINT, GET_ASIGNACIONES_ENDPOINT, GET_NOTAS_DETALLADO_ENDPOINT } from '../../constants'
+import type { ConcentradorParsed, NotasDetalladoPayload, NotaDetalle } from './types' // Import ConcentradorParsed
 
 export interface Sede {
   ind: string;
@@ -46,6 +46,20 @@ export async function fetchConcentrador(payload: ConcentradorPayload = defaultCo
   })
   if (!res.ok) {
     throw new Error('Error al obtener concentrador: ' + res.status)
+  }
+  return res.json()
+}
+
+export async function fetchNotasDetallado(payload: NotasDetalladoPayload): Promise<NotaDetalle[]> {
+  const res = await fetch(GET_NOTAS_DETALLADO_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  })
+  if (!res.ok) {
+    throw new Error('Error al obtener notas detalladas: ' + res.status)
   }
   return res.json()
 }

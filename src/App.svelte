@@ -1,10 +1,17 @@
 <script lang="ts">
   import PayloadForm from './lib/PayloadForm.svelte'
   import { loadConcentrador, loading, error, rawHTML, parsed, showPeriodos, selectedPeriodos, asignaturasOrden, lastDuration, exportCSV, payload } from './lib/storeConcentrador'
-  import type { EstudianteRow } from './lib/types'
+  import type { EstudianteRow, NotasDetalladoPayload, NotaDetalle } from './lib/types'
   import { onMount } from 'svelte'
+  import NotasDetalleDialog from './lib/NotasDetalleDialog.svelte'
+  import { fetchNotasDetallado } from './lib/api'
 
   let search = ''
+
+  let showNotasDetalleDialog = false;
+  let currentNotasDetalle: NotaDetalle[] = [];
+  let notasDetalleLoading = false;
+  let notasDetalleError: string | null = null;
 
   onMount(() => {
     if (!$parsed) {
@@ -68,6 +75,47 @@
     return asignatura ? asignatura.nombre : abreviatura;
   }
 
+  async function handleValoracionClick(est: EstudianteRow, asignaturaAbrev: string, periodo: string, valoracion: string) {
+    console.log('handleValoracionClick triggered', { est, asignaturaAbrev, periodo, valoracion });
+    if (!valoracion || valoracion === '-') {
+      console.log('No valoracion or valoracion is - , returning.');
+      return; // Don't open dialog if no valoracion
+    }
+
+    showNotasDetalleDialog = true;
+    console.log('showNotasDetalleDialog set to true:', showNotasDetalleDialog); // <-- Nuevo log
+    notasDetalleLoading = true;
+    notasDetalleError = null;
+    currentNotasDetalle = [];
+
+    const selectedAsignatura = $parsed?.asignaturas?.find(a => a.abreviatura === asignaturaAbrev);
+
+    const payloadDetalle: NotasDetalladoPayload = {
+        estudiante: est.id,
+        nombres: est.nombres,
+        asignatura: selectedAsignatura?.nombre || asignaturaAbrev, // Use full name or abbreviation if not found
+        asignat: asignaturaAbrev, // Use abbreviation
+        valoracion: valoracion,
+        periodo: periodo,
+        year: $payload.year,
+        asignacion: $payload.Asignacion,
+        nivel: $payload.nivel,
+        numero: $payload.numero,
+    };
+
+    console.log('Fetching detailed notes with payload:', payloadDetalle);
+
+    try {
+        const data = await fetchNotasDetallado(payloadDetalle);
+        console.log('Detailed notes fetched successfully:', data);
+        currentNotasDetalle = data;
+    } catch (e: any) {
+        console.error('Error fetching detailed notes:', e);
+        notasDetalleError = e.message || 'Error al cargar el detalle de notas.';
+    } finally {
+        notasDetalleLoading = false;
+    }
+  }
 
 </script>
 
@@ -87,7 +135,7 @@
       </div>
 
       <div class="flex gap-4 items-center"> <!-- Group buttons -->
-        <button onclick={loadConcentrador} class="px-4 py-2 rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center" disabled={$loading} title="Consultar">
+        <button on:click={loadConcentrador} class="px-4 py-2 rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center" disabled={$loading} title="Consultar">
           {#if $loading}
             <svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -100,7 +148,7 @@
             </svg>
           {/if}
         </button>
-        <button onclick={exportCSV} class="px-4 py-2 rounded-md bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition duration-200 disabled:opacity-50 flex items-center" disabled={!$parsed} title="Exportar CSV">
+        <button on:click={exportCSV} class="px-4 py-2 rounded-md bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition duration-200 disabled:opacity-50 flex items-center" disabled={!$parsed} title="Exportar CSV">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
           </svg>
@@ -165,17 +213,28 @@
                   {#if asig}
                     <td class="p-2 text-center align-middle">
                       {#if !$showPeriodos}
-                        <span class="font-bold text-lg {colorNota(valorPeriodo(est, asig, $payload.periodo))} px-2 py-1 rounded-md border-2 {getPeriodBorderColor($payload.periodo)}">{valorPeriodo(est, asig, $payload.periodo)}</span>
+                        <button
+                          class="font-bold text-lg {colorNota(valorPeriodo(est, asig, $payload.periodo))} px-2 py-1 rounded-md border-2 {getPeriodBorderColor($payload.periodo)} cursor-pointer"
+                          on:click={() => handleValoracionClick(est, asig, $payload.periodo, valorPeriodo(est, asig, $payload.periodo))}
+                        >
+                          {valorPeriodo(est, asig, $payload.periodo)}
+                        </button>
                       {:else}
                         <div class="grid gap-1 justify-items-center" style="grid-template-columns: repeat({$selectedPeriodos.length + 1}, minmax(32px, 1fr));">
                           {#each $selectedPeriodos.filter(p => p !== 'DEF') as per}
-                            <span class="rounded-md px-1 py-1 text-xs font-bold {colorNota(valorPeriodo(est, asig, per))} border-2 {getPeriodBorderColor(per)}" title="{asig} - {per}">
+                            <button
+                              class="rounded-md px-1 py-1 text-xs font-bold {colorNota(valorPeriodo(est, asig, per))} border-2 {getPeriodBorderColor(per)} cursor-pointer"
+                              on:click={() => handleValoracionClick(est, asig, per, valorPeriodo(est, asig, per))}
+                            >
                               {valorPeriodo(est, asig, per) || '-'}
-                            </span>
+                            </button>
                           {/each}
-                          <span class="rounded-md px-1 py-1 text-xs font-bold {colorNota(valorPeriodo(est, asig, 'DEF'))} border-2 {getPeriodBorderColor('D')}" title="{asig} - Definitiva">
+                          <button
+                            class="rounded-md px-1 py-1 text-xs font-bold {colorNota(valorPeriodo(est, asig, 'DEF'))} border-2 {getPeriodBorderColor('D')} cursor-pointer"
+                            on:click={() => handleValoracionClick(est, asig, 'DEF', valorPeriodo(est, asig, 'DEF'))}
+                          >
                             {valorPeriodo(est, asig, 'DEF') || '-'}
-                          </span>
+                          </button>
                         </div>
                       {/if}
                     </td>
@@ -189,3 +248,11 @@
     </div>
   {/if}
 </div>
+
+<NotasDetalleDialog
+  bind:showDialog={showNotasDetalleDialog}
+  notasDetalle={currentNotasDetalle}
+  loading={notasDetalleLoading}
+  error={notasDetalleError}
+  year={$payload.year}
+/>
