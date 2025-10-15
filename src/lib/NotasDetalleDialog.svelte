@@ -1,17 +1,34 @@
 <script lang="ts">
     import type { NotaDetalle } from './types';
     import { theme } from './themeStore';
+    import NotasHistoryDialog from './NotasHistoryDialog.svelte';
 
     export let showDialog: boolean;
     export let notasDetalle: NotaDetalle[] = [];
     export let loading: boolean = false;
     export let error: string | null = null;
     export let year: string; // Añadir la prop year
+    export let periodo: string;
+    export let estudianteId: string;
+    export let nivel: string;
+    export let numero: string;
+    export let asignacion: string;
+    export let asignatura: string;
+
+    let showNotasHistoryDialog: boolean = false;
 
     function closeDialog() {
         showDialog = false;
         notasDetalle = [];
         error = null;
+    }
+
+    function openNotasHistoryDialog() {
+        showNotasHistoryDialog = true;
+    }
+
+    function closeNotasHistoryDialog() {
+        showNotasHistoryDialog = false;
     }
 
     // Función auxiliar para convertir "Mes Día" a un objeto Date
@@ -90,6 +107,13 @@
                         {$theme === 'dark' ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'}">
                 <h3 class="text-2xl font-extrabold tracking-wide {$theme === 'dark' ? 'text-white' : 'text-gray-800'}">Detalle de Notas</h3>
                 <div class="flex items-center space-x-2">
+                    <button on:click={openNotasHistoryDialog} class="p-2 rounded-full transition duration-300
+                                {$theme === 'dark' ? 'text-purple-400 hover:bg-gray-700' : 'text-purple-700 hover:bg-gray-200'}"
+                            title="Ver Historial">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </button>
                     <button on:click={theme.toggle} class="p-2 rounded-full transition duration-300
                                 {$theme === 'dark' ? 'text-yellow-400 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-200'}"
                             title="Toggle theme">
@@ -183,3 +207,12 @@
         </div>
     </div>
 {/if}
+
+<NotasHistoryDialog
+    bind:showDialog={showNotasHistoryDialog}
+    studentId={estudianteId}
+    subject={asignatura}
+    periodo={periodo}
+    year={year}
+    on:close={closeNotasHistoryDialog}
+/>
