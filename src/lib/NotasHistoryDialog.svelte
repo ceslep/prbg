@@ -120,7 +120,7 @@
                 <p>No se encontró historial de notas para este estudiante y asignatura.</p>
             {/if}
 
-            <button on:click={closeDialog}>Cerrar</button>
+            <button on:click={closeDialog} class="mt-4 ml-auto px-4 py-2 rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700 transition duration-200">Cerrar</button>
         </div>
     </div>
 {/if}
