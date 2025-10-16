@@ -1,47 +1,99 @@
-# Svelte + TS + Vite
+# Concentrador de Notas - IE de Occidente
 
-This template should help get you started developing with Svelte and TypeScript in Vite.
+## Descripción del Proyecto
 
-## Recommended IDE Setup
+Este proyecto es una aplicación frontend desarrollada con Svelte, TypeScript y Vite, diseñada para interactuar con un backend PHP. Su propósito principal es la gestión y visualización de datos académicos, incluyendo asignaciones, un concentrador de notas (agregación de calificaciones estudiantiles) e historial de notas detallado para la institución "IE de Occidente".
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+## Características Principales
 
-## Need an official Svelte framework?
+*   **Gestión de Asignaciones:** Permite la obtención de información sobre asignaciones académicas.
+*   **Concentrador de Notas:** Agrega y muestra datos de calificaciones de estudiantes.
+*   **Notas Detalladas:** Visualización de calificaciones individuales con aspectos, fechas y porcentajes.
+*   **Historial de Notas:** Acceso al historial completo de calificaciones de los estudiantes.
 
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
+## Tecnologías Utilizadas
 
-## Technical considerations
+### Frontend
+*   **Framework:** Svelte (v5.x)
+*   **Lenguaje:** TypeScript
+*   **Empaquetador/Servidor de Desarrollo:** Vite
+*   **Estilos:** Tailwind CSS
 
-**Why use this over SvelteKit?**
+### Backend
+*   **Lenguaje:** PHP (para la exposición de las APIs)
 
-- It brings its own routing solution which might not be preferable for some users.
-- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
+## Estructura del Proyecto
 
-This template contains as little as possible to get started with Vite + TypeScript + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
+*   `public/`: Contiene activos estáticos como `vite.svg`.
+*   `src/`: Código fuente principal de la aplicación.
+    *   `src/assets/`: Contiene scripts PHP que actúan como endpoints del backend (e.g., `getConcentrador.php`, `getNotasDetallado.php`).
+    *   `src/lib/`: Módulos y componentes reutilizables.
+        *   `api.ts`: Definiciones de funciones para interactuar con el backend.
+        *   `types.ts`: Definiciones de interfaces y tipos de datos para la aplicación.
+        *   `storeConcentrador.ts`, `themeStore.ts`: Posibles tiendas de estado para la aplicación.
+        *   Componentes Svelte como `NotasDetalleDialog.svelte`, `NotasHistoryDialog.svelte`, `PayloadForm.svelte`, `Skeleton.svelte`, `VirtualRows.svelte`.
+    *   `App.svelte`: Componente raíz de la aplicación.
+    *   `main.ts`: Punto de entrada de la aplicación.
+*   `concentrador/`: Un sub-directorio que también parece ser un proyecto Svelte/Vite. Su relación exacta con el proyecto principal podría ser la de un módulo, una aplicación independiente o un componente legado.
+*   `constants.ts`: Define las URLs de los endpoints de la API.
 
-Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
+## API Endpoints
 
-**Why `global.d.ts` instead of `compilerOptions.types` inside `jsconfig.json` or `tsconfig.json`?**
+La aplicación se comunica con un backend PHP a través de los siguientes endpoints, definidos en `constants.ts`:
 
-Setting `compilerOptions.types` shuts out all other types not explicitly listed in the configuration. Using triple-slash references keeps the default TypeScript setting of accepting type information from the entire workspace, while also adding `svelte` and `vite/client` type information.
+*   **Base URL:** `https://app.iedeoccidente.com/consex`
+*   `GET_CONCENTRADOR_ENDPOINT`: `${API_BASE_URL}/getConcentrador2.php`
+*   `GET_ASIGNACIONES_ENDPOINT`: `${API_BASE_URL}/getasignacion.php`
+*   `GET_NOTAS_DETALLADO_ENDPOINT`: `${API_BASE_URL}/getNotasDetallado.php`
+*   `GET_NOTAS_HISTORY_ENDPOINT`: `${API_BASE_URL}/getNotasHistory.php`
 
-**Why include `.vscode/extensions.json`?**
+## Modelos de Datos Clave
 
-Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
+Los principales modelos de datos utilizados en la aplicación, definidos en `src/lib/types.ts`, incluyen:
 
-**Why enable `allowJs` in the TS template?**
+*   `Sede`: Información de sedes o campus.
+*   `ConcentradorPayload`: Parámetros para solicitar datos del concentrador.
+*   `ConcentradorParsed`: Estructura de respuesta para los datos agregados del concentrador.
+*   `EstudianteRow`: Detalles de un estudiante.
+*   `AsignaturaNota`: Notas de una asignatura por periodos.
+*   `NotasDetalladoPayload`: Parámetros para solicitar notas detalladas.
+*   `NotaDetalle`: Detalles de una nota específica.
+*   `NotaHistory`: Estructura para el historial de notas.
 
-While `allowJs: false` would indeed prevent the use of `.js` files in the project, it does not prevent the use of JavaScript syntax in `.svelte` files. In addition, it would force `checkJs: false`, bringing the worst of both worlds: not being able to guarantee the entire codebase is TypeScript, and also having worse typechecking for the existing JavaScript. In addition, there are valid use cases in which a mixed codebase may be relevant.
+## Primeros Pasos
 
-**Why is HMR not preserving my local component state?**
+Para configurar y ejecutar el proyecto localmente:
 
-HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/rixo/svelte-hmr#svelte-hmr).
+1.  **Instalación de Dependencias:**
+    ```bash
+    npm install
+    ```
 
-If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
+2.  **Ejecutar en Modo Desarrollo:**
+    ```bash
+    npm run dev
+    ```
+    Esto iniciará el servidor de desarrollo de Vite, y la aplicación estará disponible en la URL proporcionada en la consola (usualmente `http://localhost:5173`).
 
-```ts
-// store.ts
-// An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
-```
+3.  **Construir para Producción:**
+    ```bash
+    npm run build
+    ```
+    Esto generará los archivos optimizados para producción en el directorio `dist/`.
+
+4.  **Previsualizar la Construcción:**
+    ```bash
+    npm run preview
+    ```
+    Permite previsualizar la versión de producción de la aplicación localmente.
+
+5.  **Verificación de Tipos y Svelte:**
+    ```bash
+    npm run check
+    ```
+    Ejecuta las comprobaciones de tipos de TypeScript y Svelte.
+
+## Configuración de IDE Recomendada
+
+*   [VS Code](https://code.visualstudio.com/)
+*   Extensión de Svelte para VS Code: [Svelte for VS Code](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode)

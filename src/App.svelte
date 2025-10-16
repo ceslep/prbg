@@ -18,6 +18,7 @@
   let notasDetalleError: string | null = null;
   let selectedEstudianteId: string = '';
   let selectedAsignaturaNombre: string = '';
+  let selectedStudentName: string = '';
 
   onMount(() => {
     if (!$parsed) {
@@ -91,6 +92,7 @@
 
   async function handleValoracionClick(est: EstudianteRow, asignaturaAbrev: string, periodo: string, valoracion: string) {
     console.log('handleValoracionClick triggered', { est, asignaturaAbrev, periodo, valoracion });
+    showNotasDetalleDialog = true;
     if (!valoracion || valoracion === '-') {
       console.log('No valoracion or valoracion is - , returning.');
       return; // Don't open dialog if no valoracion
@@ -100,8 +102,9 @@
 
     const selectedAsignatura = $parsed?.asignaturas?.find(a => a.abreviatura === asignaturaAbrev);
 
-    showNotasDetalleDialog = true;
+    notasDetalleLoading = true; // Set loading to true immediately when dialog is shown
     selectedEstudianteId = est.id;
+    selectedStudentName = est.nombres;
     selectedAsignaturaNombre = selectedAsignatura?.nombre || asignaturaAbrev;
 
     const payloadDetalle: NotasDetalladoPayload = {
@@ -194,7 +197,7 @@
 
   {#if $parsed && !$loading}
     <div class="rounded-lg shadow-lg overflow-hidden {$theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'}">
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto max-h-[60vh] overflow-y-auto">
         <table class="min-w-full text-sm text-left {$theme === 'dark' ? 'text-gray-300' : 'text-gray-900'}">
           <thead class="text-xs uppercase tracking-wider sticky top-0 z-10 {$theme === 'dark' ? 'bg-gray-700 text-gray-400' : 'bg-gray-200 text-gray-600'}">
             <tr>
@@ -254,7 +257,8 @@
                         {#if !$showPeriodos}
                           <button
                             class="font-bold text-lg {colorNota(valorPeriodo(est, asig, $payload.periodo))} px-2 py-1 rounded-md border-2 {getPeriodBorderColor($payload.periodo)} cursor-pointer"
-                            on:click={() => handleValoracionClick(est, asig, $payload.periodo, valorPeriodo(est, asig, $payload.periodo))}
+                            on:click={() => { console.log('Button clicked!'); handleValoracionClick(est, asig, $payload.periodo, valorPeriodo(est, asig, $payload.periodo)); }}
+                            title="{est.nombres} - {getAsignaturaName(asig)} - {getShortPeriodName($payload.periodo)}: {valorPeriodo(est, asig, $payload.periodo)}"
                           >
                             {valorPeriodo(est, asig, $payload.periodo)}
                           </button>
@@ -264,6 +268,7 @@
                               <button
                                 class="rounded-md px-1 py-1 text-xs font-bold {colorNota(valorPeriodo(est, asig, per))} border-2 {getPeriodBorderColor(per)} cursor-pointer"
                                 on:click={() => handleValoracionClick(est, asig, per, valorPeriodo(est, asig, per))}
+                                title="{est.nombres} - {getAsignaturaName(asig)} - {getShortPeriodName(per)}: {valorPeriodo(est, asig, per) || '-'}"
                               >
                                 {valorPeriodo(est, asig, per) || '-'}
                               </button>
@@ -271,6 +276,7 @@
                             <button
                               class="rounded-md px-1 py-1 text-xs font-bold {colorNota(valorPeriodo(est, asig, 'DEF'))} border-2 {getPeriodBorderColor('D')} cursor-pointer"
                               on:click={() => handleValoracionClick(est, asig, 'DEF', valorPeriodo(est, asig, 'DEF'))}
+                              title="{est.nombres} - {getAsignaturaName(asig)} - Definitiva: {valorPeriodo(est, asig, 'DEF') || '-'}"
                             >
                               {valorPeriodo(est, asig, 'DEF') || '-'}
                             </button>
@@ -310,7 +316,14 @@
     numero={$payload.numero}
     asignacion={$payload.Asignacion}
     asignatura={selectedAsignaturaNombre}
+    studentName={selectedStudentName}
   />
+
+  {#if showNotasDetalleDialog}
+    <div style="position: fixed; top: 10px; right: 10px; background-color: green; color: white; padding: 5px;">
+      Dialog is open (Visual Indicator)
+    </div>
+  {/if}
 </div>
 
 <!--

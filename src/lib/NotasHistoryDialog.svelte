@@ -4,6 +4,7 @@
     import type { NotaHistory } from './types';
     import Skeleton from './Skeleton.svelte';
     import { theme } from './themeStore';
+    import Tooltip from './Tooltip.svelte';
 
     export let showDialog: boolean = false;
     export let studentId: string;
@@ -15,14 +16,19 @@
     let loading: boolean = false;
     let error: string | null = null;
 
+    let columnNames: string[] = [];
+    $: if (notasHistory.length > 0) {
+        const allKeys = Object.keys(notasHistory[0]);
+        const notaKeys = allKeys.filter(key => key.startsWith('nota') && key.length <= 6 && parseInt(key.substring(4)) >= 1 && parseInt(key.substring(4)) <= 12);
+        columnNames = notaKeys;
+    }
+
     const dispatch = createEventDispatcher();
 
     function areNotasEqual(nota1: NotaHistory, nota2: NotaHistory): boolean {
-        // Compare all properties except 'fechahora'
-        const keys = Object.keys(nota1) as Array<keyof NotaHistory>;
-        for (const key of keys) {
-            if (key === 'fechahora') continue;
-            if (nota1[key] !== nota2[key]) {
+        for (let i = 1; i <= 12; i++) {
+            const notaKey = `nota${i}` as keyof NotaHistory;
+            if (nota1[notaKey] !== nota2[notaKey]) {
                 return false;
             }
         }
@@ -80,47 +86,46 @@
 
 {#if showDialog}
     <div class="dialog-backdrop" on:click={closeDialog} role="button" tabindex="0" on:keydown={(e) => { if (e.key === 'Escape') closeDialog(); }}>
-        <div class="dialog-content" on:click|stopPropagation role="dialog" aria-modal="true" tabindex="-1" on:keydown={(e) => { if (e.key === 'Escape') closeDialog(); }}>
-            <h2>Historial de Notas para {studentId} - {subject}</h2>
+        <div class="dialog-content flex flex-col p-6 {$theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900 text-gray-200' : 'bg-white text-gray-800'}" on:click|stopPropagation role="dialog" aria-modal="true" tabindex="-1" on:keydown={(e) => { if (e.key === 'Escape') closeDialog(); }}>
+            <h2 class="{$theme === 'dark' ? 'text-white' : 'text-gray-800'}">Historial de Notas para {studentId} - {subject}</h2>
 
             {#if loading}
                 <Skeleton rows={5} columns={6} theme={$theme} />
             {:else if error}
-                <p class="error">Error: {error}</p>
+                <p class="{$theme === 'dark' ? 'text-red-400' : 'text-red-600'}">Error: {error}</p>
             {:else if notasHistory.length > 0}
                 <div class="table-container">
                     <table>
                         <thead>
                             <tr>
-                                <th>Periodo</th>
-                                <th>Valoración</th>
-                                <th>Nota 1</th>
-                                <th>Aspecto 1</th>
-                                <th>Fecha 1</th>
-                                <th>Fecha y Hora</th>
-                                <!-- Add more headers as needed -->
+                                {#each columnNames as colName}
+                                    <th class="{$theme === 'dark' ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-600'}">{colName.replace('nota', 'N')}</th>
+                                {/each}
                             </tr>
                         </thead>
                         <tbody>
                             {#each notasHistory as nota}
-                                <tr>
-                                    <td>{nota.periodo}</td>
-                                    <td>{nota.valoracion}</td>
-                                    <td>{nota.nota1 || 'N/A'}</td>
-                                    <td>{nota.aspecto1 || 'N/A'}</td>
-                                    <td>{nota.fecha1 || 'N/A'}</td>
-                                    <td>{nota.fechahora}</td>
-                                    <!-- Add more data cells as needed -->
+                                <tr class="{$theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50'}">
+                                    {#each columnNames as colName}
+                                        {@const aspectoColName = colName.replace('nota', 'aspecto')}
+                                        {@const fechaColName = colName.replace('nota', 'fecha')}
+                                        {@const hintText = `Aspecto: ${nota[aspectoColName] || 'N/A'}\nFecha: ${nota[fechaColName] || 'N/A'}`}
+                                        <td class="text-center">
+                                            <Tooltip content="{hintText}">
+                                                {nota[colName] || ''}
+                                            </Tooltip>
+                                        </td>
+                                    {/each}
                                 </tr>
                             {/each}
                         </tbody>
                     </table>
                 </div>
             {:else}
-                <p>No se encontró historial de notas para este estudiante y asignatura.</p>
+                <p class="{$theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}">No se encontró historial de notas para este estudiante y asignatura.</p>
             {/if}
 
-            <button on:click={closeDialog} class="mt-4 ml-auto px-4 py-2 rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700 transition duration-200">Cerrar</button>
+            <button on:click={closeDialog} class="mt-4 ml-auto px-4 py-2 rounded-md text-white font-semibold transition duration-200 {$theme === 'dark' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'}">Cerrar</button>
         </div>
     </div>
 {/if}
@@ -139,20 +144,10 @@
         z-index: 1000;
     }
 
-    .dialog-content {
-        background-color: white;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        max-width: 90%;
-        max-height: 90%;
-        overflow-y: auto;
-        color: black; /* Ensure text is visible */
-    }
-
     .table-container {
         max-height: 400px; /* Adjust as needed */
         overflow-y: auto;
+        overflow-x: auto; /* Added for horizontal scrolling */
         margin-top: 15px;
         margin-bottom: 15px;
     }
@@ -166,28 +161,13 @@
     th, td {
         border: 1px solid #ddd;
         padding: 8px;
-        text-align: left;
+        /* Removed text-align: left; to allow Tailwind's text-center to work */
     }
 
     th {
-        background-color: #f2f2f2;
+        /* background-color: #f2f2f2; */
+        text-align: center; /* Ensure headers are centered */
     }
 
-    .error {
-        color: red;
-    }
-
-    button {
-        margin-top: 15px;
-        padding: 10px 20px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-
-    button:hover {
-        background-color: #0056b3;
-    }
+    /* Removed .error and button styles as they are now handled by Tailwind */
 </style>

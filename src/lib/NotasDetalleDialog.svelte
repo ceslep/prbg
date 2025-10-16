@@ -14,8 +14,15 @@
     export let numero: string;
     export let asignacion: string;
     export let asignatura: string;
+    export let studentName: string;
 
     let showNotasHistoryDialog: boolean = false;
+
+    let docenteName: string = '';
+
+    $: if (notasDetalle.length > 0) {
+        docenteName = notasDetalle[0].Docente;
+    }
 
     function closeDialog() {
         showDialog = false;
@@ -78,7 +85,7 @@
 
     $: {
         if (showDialog) {
-            console.log('NotasDetalleDialog: showDialog is true, attempting to render.'); // <-- Nuevo log
+            // console.log('NotasDetalleDialog: showDialog is true, attempting to render.'); // <-- Nuevo log
         }
     }
 </script>
@@ -97,6 +104,8 @@
     <div class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50 backdrop-blur-sm transition-opacity duration-300"
          class:opacity-100={showDialog}
          class:opacity-0={!showDialog}>
+        <!-- Console log to confirm rendering -->
+        <script>console.log('NotasDetalleDialog is rendering!');</script>
         <div class="rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col border transform transition-all duration-300 ease-out
                     {$theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700' : 'bg-white border-gray-300'}"
              class:scale-100={showDialog}
@@ -105,7 +114,22 @@
              class:opacity-0={!showDialog}>
             <div class="flex justify-between items-center p-4 border-b
                         {$theme === 'dark' ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'}">
-                <h3 class="text-2xl font-extrabold tracking-wide {$theme === 'dark' ? 'text-white' : 'text-gray-800'}">Detalle de Notas</h3>
+                <h3 class="text-2xl font-extrabold tracking-wide {$theme === 'dark' ? 'text-white' : 'text-gray-800'}">
+                    Detalle de Notas
+                    {#if asignatura}
+                        <span class="text-sm {$theme === 'dark' ? 'text-purple-400' : 'text-purple-600'}"> ({asignatura})</span>
+                    {/if}
+                    {#if periodo}
+                        <span class="text-sm {$theme === 'dark' ? 'text-green-400' : 'text-green-600'}"> (Periodo: {periodo})</span>
+                    {/if}
+                    <br>
+                    {#if studentName}
+                        <span class="text-sm {$theme === 'dark' ? 'text-yellow-400' : 'text-yellow-600'}">Estudiante: {studentName}</span><br>
+                    {/if}
+                    {#if docenteName}
+                        <span class="text-sm {$theme === 'dark' ? 'text-blue-400' : 'text-blue-600'}">Docente: {docenteName}</span>
+                    {/if}
+                </h3>
                 <div class="flex items-center space-x-2">
                     <button on:click={openNotasHistoryDialog} class="p-2 rounded-full transition duration-300
                                 {$theme === 'dark' ? 'text-purple-400 hover:bg-gray-700' : 'text-purple-700 hover:bg-gray-200'}"
@@ -170,8 +194,8 @@
                                 <tr>
                                     <th scope="col" class="px-4 py-3">Aspecto</th>
                                     <th scope="col" class="px-4 py-3">Nota</th>
-                                    <th scope="col" class="px-4 py-3">Docente</th>
-                                    <th scope="col" class="px-4 py-3">Periodo</th>
+                                    
+                                    
                                     <th scope="col" class="px-4 py-3">Fecha Aspecto</th>
                                     <th scope="col" class="px-4 py-3">Fecha Nota</th>
                                 </tr>
@@ -184,8 +208,8 @@
                                                     {$theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50'}">
                                             <td class="px-4 py-3 font-medium">{nota.Aspecto || 'N/A'}</td>
                                             <td class="px-4 py-3 {colorNotaDetalle(nota.Nota)}">{nota.Nota || 'N/A'}</td>
-                                            <td class="px-4 py-3">{nota.Docente}</td>
-                                            <td class="px-4 py-3">{nota.periodo}</td>
+                                            
+                                            
                                             <td class="px-4 py-3">{nota.FechaAspecto}</td>
                                             <td class="px-4 py-3">{nota.FechaNota}</td>
                                         </tr>
