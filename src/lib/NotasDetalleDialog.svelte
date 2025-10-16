@@ -10,9 +10,7 @@
     export let year: string; // Añadir la prop year
     export let periodo: string;
     export let estudianteId: string;
-    export let nivel: string;
-    export let numero: string;
-    export let asignacion: string;
+
     export let asignatura: string;
     export let studentName: string;
 

@@ -17,10 +17,22 @@
     let error: string | null = null;
 
     let columnNames: string[] = [];
-    $: if (notasHistory.length > 0) {
-        const allKeys = Object.keys(notasHistory[0]);
-        const notaKeys = allKeys.filter(key => key.startsWith('nota') && key.length <= 6 && parseInt(key.substring(4)) >= 1 && parseInt(key.substring(4)) <= 12);
-        columnNames = notaKeys;
+
+    // Reactivo para calcular columnas válidas y ordenarlas
+    $: {
+        if (notasHistory.length > 0) {
+            const allKeys = Object.keys(notasHistory[0]);
+            const notaKeys = allKeys.filter(key => {
+                if (!key.startsWith('nota') || key.length > 6) return false;
+                const suffix = key.substring(4);
+                if (!/^\d+$/.test(suffix)) return false;
+                const num = parseInt(suffix, 10);
+                return num >= 1 && num <= 12;
+            }).sort((a, b) => parseInt(a.substring(4), 10) - parseInt(b.substring(4), 10));
+            columnNames = notaKeys;
+        } else {
+            columnNames = [];
+        }
     }
 
     const dispatch = createEventDispatcher();
@@ -37,11 +49,11 @@
 
     function getUniqueNotas(notas: NotaHistory[]): NotaHistory[] {
         const uniqueNotas: NotaHistory[] = [];
-        notas.forEach(nota => {
+        for (const nota of notas) {
             if (!uniqueNotas.some(uniqueNota => areNotasEqual(uniqueNota, nota))) {
                 uniqueNotas.push(nota);
             }
-        });
+        }
         return uniqueNotas;
     }
 
@@ -74,19 +86,70 @@
         }
     }
 
-    $: if (showDialog && studentId && subject && periodo && year) {
-        fetchNotasHistory();
+    // Evitar fetch duplicado
+    let lastFetchedKey: string | null = null;
+    $: {
+        const key = `${studentId}-${subject}-${periodo}-${year}`;
+        if (showDialog && studentId && subject && periodo && year) {
+            if (key !== lastFetchedKey) {
+                lastFetchedKey = key;
+                fetchNotasHistory();
+            }
+        } else {
+            lastFetchedKey = null;
+        }
     }
 
     function closeDialog() {
         showDialog = false;
         dispatch('close');
     }
+
+    function isNotaHistoryRowEmpty(nota: NotaHistory): boolean {
+        for (let i = 1; i <= 12; i++) {
+            const notaKey = `nota${i}` as keyof NotaHistory;
+            if (nota[notaKey] !== null && nota[notaKey] !== '') {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function getHintText(nota: NotaHistory, colName: string): string {
+        const aspectoKey = colName.replace('nota', 'aspecto');
+        const fechaKey = colName.replace('nota', 'fecha');
+        // Usamos 'as any' solo si confiamos en la estructura; alternativa: definir tipo completo
+        const aspecto = (nota as any)[aspectoKey] ?? 'N/A';
+        const fecha = (nota as any)[fechaKey] ?? 'N/A';
+        return `Aspecto: ${aspecto}\nFecha: ${fecha}`;
+    }
+
+    function shouldBlinkRed(value: string | null): boolean {
+        if (value === null || value === '') return false;
+        const num = parseFloat(value);
+        return !isNaN(num) && num < 3;
+    }
+
+    $: filteredNotasHistory = notasHistory.filter(nota => !isNotaHistoryRowEmpty(nota));
 </script>
 
 {#if showDialog}
-    <div class="dialog-backdrop" on:click={closeDialog} role="button" tabindex="0" on:keydown={(e) => { if (e.key === 'Escape') closeDialog(); }}>
-        <div class="dialog-content flex flex-col p-6 {$theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900 text-gray-200' : 'bg-white text-gray-800'}" on:click|stopPropagation role="dialog" aria-modal="true" tabindex="-1" on:keydown={(e) => { if (e.key === 'Escape') closeDialog(); }}>
+    <div 
+        class="dialog-backdrop" 
+        on:click={closeDialog} 
+        role="button" 
+        tabindex="0" 
+        on:keydown={(e) => { if (e.key === 'Escape') closeDialog(); }}
+        aria-label="Cerrar diálogo"
+    >
+        <div 
+            class="dialog-content flex flex-col p-6 {$theme === 'dark' ? 'bg-gradient-to-br from-gray-800 to-gray-900 text-gray-200' : 'bg-white text-gray-800'}" 
+            on:click|stopPropagation 
+            role="dialog" 
+            aria-modal="true" 
+            tabindex="-1" 
+            on:keydown={(e) => { if (e.key === 'Escape') closeDialog(); }}
+        >
             <h2 class="{$theme === 'dark' ? 'text-white' : 'text-gray-800'}">Historial de Notas para {studentId} - {subject}</h2>
 
             {#if loading}
@@ -99,20 +162,21 @@
                         <thead>
                             <tr>
                                 {#each columnNames as colName}
-                                    <th class="{$theme === 'dark' ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-600'}">{colName.replace('nota', 'N')}</th>
+                                    <th class="{$theme === 'dark' ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-600'}">
+                                        {colName.replace('nota', 'N')}
+                                    </th>
                                 {/each}
                             </tr>
                         </thead>
                         <tbody>
-                            {#each notasHistory as nota}
+                            {#each filteredNotasHistory as nota}
                                 <tr class="{$theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50'}">
                                     {#each columnNames as colName}
-                                        {@const aspectoColName = colName.replace('nota', 'aspecto')}
-                                        {@const fechaColName = colName.replace('nota', 'fecha')}
-                                        {@const hintText = `Aspecto: ${nota[aspectoColName] || 'N/A'}\nFecha: ${nota[fechaColName] || 'N/A'}`}
                                         <td class="text-center">
-                                            <Tooltip content="{hintText}">
-                                                {nota[colName] || ''}
+                                            <Tooltip content={getHintText(nota, colName)}>
+                                                <span class:blink-red={shouldBlinkRed(nota[colName as keyof NotaHistory])}>
+                                                    {nota[colName as keyof NotaHistory] || ''}
+                                                </span>
                                             </Tooltip>
                                         </td>
                                     {/each}
@@ -125,7 +189,12 @@
                 <p class="{$theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}">No se encontró historial de notas para este estudiante y asignatura.</p>
             {/if}
 
-            <button on:click={closeDialog} class="mt-4 ml-auto px-4 py-2 rounded-md text-white font-semibold transition duration-200 {$theme === 'dark' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'}">Cerrar</button>
+            <button 
+                on:click={closeDialog} 
+                class="mt-4 ml-auto px-4 py-2 rounded-md text-white font-semibold transition duration-200 {$theme === 'dark' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'}"
+            >
+                Cerrar
+            </button>
         </div>
     </div>
 {/if}
@@ -145,9 +214,9 @@
     }
 
     .table-container {
-        max-height: 400px; /* Adjust as needed */
+        max-height: 400px;
         overflow-y: auto;
-        overflow-x: auto; /* Added for horizontal scrolling */
+        overflow-x: auto;
         margin-top: 15px;
         margin-bottom: 15px;
     }
@@ -161,13 +230,20 @@
     th, td {
         border: 1px solid #ddd;
         padding: 8px;
-        /* Removed text-align: left; to allow Tailwind's text-center to work */
     }
 
     th {
-        /* background-color: #f2f2f2; */
-        text-align: center; /* Ensure headers are centered */
+        text-align: center;
     }
 
-    /* Removed .error and button styles as they are now handled by Tailwind */
+    @keyframes blink {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+
+    .blink-red {
+        animation: blink 1s linear infinite;
+        color: #ef4444;
+    }
 </style>

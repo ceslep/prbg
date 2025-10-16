@@ -16,9 +16,10 @@
   let currentNotasDetalle: NotaDetalle[] = [];
   let notasDetalleLoading = false;
   let notasDetalleError: string | null = null;
+  let selectedStudentName: string = '';
   let selectedEstudianteId: string = '';
   let selectedAsignaturaNombre: string = '';
-  let selectedStudentName: string = '';
+  let showPayloadForm: boolean = true; // New reactive variable
 
   onMount(() => {
     if (!$parsed) {
@@ -136,58 +137,55 @@
 
 </script>
 
-<div class="min-h-screen p-4 sm:p-6 lg:p-8 space-y-6 {$theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}">
+<div class="min-h-screen p-4 sm:p-6 lg:p-8 space-y-6 flex flex-col {$theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}">
   <header class="flex justify-between items-center">
-    <button
-      on:click={theme.toggle}
-      class="p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 {$theme === 'dark' ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}"
-      aria-label="Toggle theme"
-    >
-      {#if $theme === 'dark'}
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-      {:else}
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-        </svg>
-      {/if}
-    </button>
+    <div class="flex gap-2">
+      <button
+        on:click={theme.toggle}
+        class="p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 {$theme === 'dark' ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}"
+        aria-label="Toggle theme"
+      >
+        {#if $theme === 'dark'}
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+        {:else}
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+          </svg>
+        {/if}
+      </button>
+      <button on:click={() => showPayloadForm = !showPayloadForm} class="p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 {$theme === 'dark' ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}" title="{showPayloadForm ? 'Ocultar Controles' : 'Mostrar Controles'}">
+        {#if showPayloadForm}
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
+        {:else}
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7 1.274-4.057 5.064-7 9.542-7 .79 0 1.573.114 2.317.325M12 12l2.5-2.5M12 12l-2.5 2.5M12 12l-2.5-2.5M12 12l2.5 2.5" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
+        {/if}
+      </button>
+    </div>
     {#if $lastDuration}<span class="text-xs {$theme === 'dark' ? 'text-gray-500' : 'text-gray-600'}">Carga en: {$lastDuration}ms</span>{/if}
   </header>
 
-  <section class="rounded-lg p-6 shadow-lg mt-0 {$theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'}">
-    
-    <PayloadForm disabled={$loading} />
-    <div class="mt-6 flex gap-4 items-center flex-wrap justify-between"> <!-- Added justify-between -->
-      <div class="flex items-center"> <!-- Group checkbox and label -->
-        <input id="fld-show-periodos" type="checkbox" bind:checked={$showPeriodos} class="h-5 w-5 rounded text-blue-500 focus:ring-blue-500 {$theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-gray-200 border-gray-300'}" />
-        <label for="fld-show-periodos" class="ml-3 {$theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}">Mostrar Periodos</label>
-      </div>
 
-      <div class="flex gap-4 items-center"> <!-- Group buttons -->
-        <button on:click={loadConcentrador} class="px-4 py-2 rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center" disabled={$loading} title="Consultar">
-          {#if $loading}
-            <svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <span>Cargando...</span>
-          {:else}
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          {/if}
-        </button>
-        <button on:click={exportCSV} class="px-4 py-2 rounded-md bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition duration-200 disabled:opacity-50 flex items-center" disabled={!$parsed} title="Exportar CSV">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-          </svg>
-        </button>
-      </div>
-    </div>
-  </section>
 
+ 
+
+
+  {#if showPayloadForm}
+    <section class="rounded-lg p-6 shadow-lg mt-0 {$theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'}">
+
+      <PayloadForm disabled={$loading} />
+
+      </section>
+    {/if}
   {#if $error}
     <div class="bg-rose-800 border border-rose-700 text-white px-4 py-3 rounded-lg relative" role="alert">
       <strong class="font-bold">Error:</strong>
@@ -196,8 +194,8 @@
   {/if}
 
   {#if $parsed && !$loading}
-    <div class="rounded-lg shadow-lg overflow-hidden {$theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'}">
-      <div class="overflow-x-auto max-h-[60vh] overflow-y-auto">
+    <div class="rounded-lg shadow-lg overflow-hidden flex-grow {$theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'}">
+      <div class="overflow-x-auto overflow-y-auto max-h-[70vh]">
         <table class="min-w-full text-sm text-left {$theme === 'dark' ? 'text-gray-300' : 'text-gray-900'}">
           <thead class="text-xs uppercase tracking-wider sticky top-0 z-10 {$theme === 'dark' ? 'bg-gray-700 text-gray-400' : 'bg-gray-200 text-gray-600'}">
             <tr>
@@ -312,9 +310,7 @@
     year={$payload.year}
     periodo={$payload.periodo}
     estudianteId={selectedEstudianteId}
-    nivel={$payload.nivel}
-    numero={$payload.numero}
-    asignacion={$payload.Asignacion}
+
     asignatura={selectedAsignaturaNombre}
     studentName={selectedStudentName}
   />
