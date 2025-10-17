@@ -3,6 +3,16 @@ export interface PeriodoValoracion {
   valoracion: number
 }
 
+export interface Periodo {
+  ind: string;
+  nombre: string;
+  selected: string;
+}
+
+export interface Year {
+  year: string;
+}
+
 export interface AsignaturaNota {
   asignatura: string
   periodos: PeriodoValoracion[]

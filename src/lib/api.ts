@@ -1,5 +1,5 @@
-import { GET_CONCENTRADOR_ENDPOINT, GET_ASIGNACIONES_ENDPOINT, GET_NOTAS_DETALLADO_ENDPOINT } from '../../constants'
-import type { ConcentradorParsed, NotasDetalladoPayload, NotaDetalle } from './types' // Import ConcentradorParsed
+import { GET_CONCENTRADOR_ENDPOINT, GET_ASIGNACIONES_ENDPOINT, GET_NOTAS_DETALLADO_ENDPOINT, GET_PERIODOS_ENDPOINT, GET_YEARS_ENDPOINT } from '../../constants'
+import type { ConcentradorParsed, NotasDetalladoPayload, NotaDetalle, Periodo, Year } from './types' // Import ConcentradorParsed
 
 export interface Sede {
   ind: string;
@@ -24,7 +24,7 @@ export const defaultConcentradorPayload: ConcentradorPayload = {
   nivel: '11',
   numero: '1',
   periodo: 'CUATRO',
-  year: '2025',
+  year: new Date().getFullYear().toString(),
   activos: true
 }
 
@@ -32,6 +32,22 @@ export async function fetchAsignaciones(): Promise<Sede[]> {
   const res = await fetch(GET_ASIGNACIONES_ENDPOINT)
   if (!res.ok) {
     throw new Error('Error al obtener asignaciones: ' + res.status)
+  }
+  return res.json()
+}
+
+export async function fetchPeriodos(): Promise<Periodo[]> {
+  const res = await fetch(GET_PERIODOS_ENDPOINT)
+  if (!res.ok) {
+    throw new Error('Error al obtener periodos: ' + res.status)
+  }
+  return res.json()
+}
+
+export async function fetchYears(): Promise<Year[]> {
+  const res = await fetch(GET_YEARS_ENDPOINT)
+  if (!res.ok) {
+    throw new Error('Error al obtener años: ' + res.status)
   }
   return res.json()
 }

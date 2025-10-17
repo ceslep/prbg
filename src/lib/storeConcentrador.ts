@@ -18,13 +18,13 @@ export const lastDuration = writable<number | null>(null)
 let abortCtrl: AbortController
 const cache = new Map<string, ConcentradorParsed>()
 
-export async function loadConcentrador() {
+export async function loadConcentrador(forceReload: boolean = false) {
   if (abortCtrl) {
     abortCtrl.abort()
   }
   abortCtrl = new AbortController()
   const key = JSON.stringify(get(payload))
-  if (cache.has(key)) {
+  if (!forceReload && cache.has(key)) {
     parsed.set(cache.get(key)!)
     return
   }
@@ -77,6 +77,30 @@ export function exportCSV() {
   const a = document.createElement('a')
   a.href = url
   a.download = 'concentrador.csv'
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+export function exportExcel() {
+  const p = get(parsed)
+  if (!p) return
+  const sep = '\t' // Use tab as separator for Excel
+  const asign = p.asignaturasOrden.filter(Boolean)
+  const header = ['Estudiante', ...asign.map(a => `"${a}"`)].join(sep)
+  const lines = p.estudiantes.map(est => {
+    const cols = asign.map(a => {
+      const asig = est.asignaturas.find(x => x.asignatura === a)
+      const def = asig?.periodos.find(p => p.periodo === 'DEF')?.valoracion
+      return def != null ? def.toFixed(2) : ''
+    })
+    return `"${est.nombres.replace(/"/g,'""')}"${sep}${cols.join(sep)}`
+  })
+  const csv = [header, ...lines].join('\n')
+  const blob = new Blob([csv], { type: 'application/vnd.ms-excel;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'concentrador.xls'
   a.click()
   URL.revokeObjectURL(url)
 }
