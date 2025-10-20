@@ -8,7 +8,7 @@
 </script>
 
 <style>
-  .skeleton { background: linear-gradient(90deg, var(--s1) 25%, var(--s2) 37%, var(--s1) 63%); background-size: 400% 100%; animation: shimmer 1.4s ease infinite; }
+  .skeleton { background: linear-gradient(90deg, var(--s1) 25%, var(--s2) 37%, var(--s1) 63%); background-size: 600% 100%; animation: shimmer 1.2s ease infinite; }
   @keyframes shimmer { 0%{background-position:100% 0} 100%{background-position:-100% 0} }
   .skeleton-block { background: var(--block); border-radius: 6px; }
   .skeleton-container { background: var(--bg); padding: 16px; border-radius: 8px; }

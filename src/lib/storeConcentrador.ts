@@ -31,6 +31,7 @@ export async function loadConcentrador(forceReload: boolean = false) {
   const t0 = performance.now()
   loading.set(true)
   error.set(null)
+  parsed.set(null) // Clear parsed data to show skeleton immediately
   try {
     const data = await fetchConcentrador(get(payload)) // data is now ConcentradorParsed
     // rawHTML.set(data.html) // REMOVED
