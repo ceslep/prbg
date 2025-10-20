@@ -17,6 +17,7 @@
   let selectedStudentName = ''
   let selectedEstudianteId = ''
   let selectedAsignaturaNombre = ''
+  let selectedPeriodoForDialog = '' // New variable to store the clicked period for the dialog
   let showPayloadForm = true // Controla visibilidad del formulario
 
   onMount(() => {
@@ -91,6 +92,7 @@
     selectedEstudianteId = est.id
     selectedStudentName = est.nombres
     selectedAsignaturaNombre = selectedAsignatura?.nombre || asignaturaAbrev
+    selectedPeriodoForDialog = periodo // Set the clicked period
 
     const payloadDetalle: NotasDetalladoPayload = {
       estudiante: est.id,
@@ -361,7 +363,7 @@
     loading={notasDetalleLoading}
     error={notasDetalleError}
     year={$payload.year}
-    periodo={$payload.periodo}
+    periodo={selectedPeriodoForDialog}
     estudianteId={selectedEstudianteId}
     asignatura={selectedAsignaturaNombre}
     studentName={selectedStudentName}
