@@ -45,11 +45,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     }
 
     // Prepare the SQL statement using placeholders
+    // OPTIMIZATION NOTE: For performance on large tables, ensure that 'estudiante', 'periodo', 'asignatura', and 'year' columns in the 'notas2' table are indexed.
     $sql = "SELECT * FROM notas2
             WHERE estudiante = ?
             AND periodo = ?
             AND asignatura = ?
-            AND year = YEAR(CURDATE())";
+            AND year = ?";
+
+    $param_types = "ssss";
+    $param_values = [$input_data->estudiante, $input_data->periodo, $input_data->asignatura, $input_data->year];
+
+    if (isset($input_data->limit) && is_numeric($input_data->limit)) {
+        $sql .= " LIMIT ?";
+        $param_types .= "i"; // 'i' for integer
+        $param_values[] = (int)$input_data->limit;
+    }
 
     $stmt = $mysqli->prepare($sql);
 
@@ -60,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
         // Get bound parameters (this is a simplified approach, real mysqli_stmt_get_bindings is complex)
         // For demonstration, we'll use the input_data directly.
-        $bound_params = [$input_data->estudiante, $input_data->periodo, $input_data->asignatura];
+        $bound_params = [$input_data->estudiante, $input_data->periodo, $input_data->asignatura,$input_data->year];
 
         $debug_sql = $sql;
         $param_index = 0;
@@ -84,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     }
 
     // Bind parameters
-    $stmt->bind_param("sss", $input_data->estudiante, $input_data->periodo, $input_data->asignatura);
+    $stmt->bind_param($param_types, ...$param_values);
 
     // Execute the statement
     $stmt->execute();

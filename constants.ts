@@ -8,6 +8,8 @@ export const GET_NOTAS_DETALLADO_ENDPOINT = `${API_BASE_URL}/getNotasDetallado.p
 export const GET_NOTAS_HISTORY_ENDPOINT = `${API_BASE_URL}/getNotasHistory.php`;
 export const GET_PERIODOS_ENDPOINT = `${API_BASE_URL}/getPeriodos.php`;
 export const GET_YEARS_ENDPOINT = `${API_BASE_URL}/getYearsData.php`;
+export const GET_INFOCANT_ENDPOINT = `${API_BASE_URL}/getInfoCant.php`; // New endpoint for InfoCant
+export const GET_INASISTENCIAS_DETALLADO_ENDPOINT = `${API_BASE_URL}/inasistenciasDetallado.php`;
 
 // Ejemplo de uso (fetch):
 // fetch(GET_CONCENTRADOR_ENDPOINT)

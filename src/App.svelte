@@ -8,9 +8,13 @@
   import { theme } from './lib/themeStore'
   import { fetchNotasDetallado } from './lib/api'
   import VirtualRows from './lib/VirtualRows.svelte'
+  import InfoCantDialog from './lib/InfoCantDialog.svelte'
+  import InasistenciasDetallado from './lib/InasistenciasDetallado.svelte' // Import the new component
 
   let search = ''
   let showNotasDetalleDialog = false
+  let showInfoCantDialog = false
+  let showInasistenciasDetallado = false // New state variable for InasistenciasDetallado
   let currentNotasDetalle: NotaDetalle[] = []
   let notasDetalleLoading = false
   let notasDetalleError: string | null = null
@@ -18,7 +22,24 @@
   let selectedEstudianteId = ''
   let selectedAsignaturaNombre = ''
   let selectedPeriodoForDialog = '' // New variable to store the clicked period for the dialog
+  let inasistenciasEstudianteId = '1058078934' // Default for InasistenciasDetallado
+  let inasistenciasNombres = 'AGUDELO MAYA CLAUDIA YURI' // Default for InasistenciasDetallado
+  let inasistenciasAsignatura = 'QUIMIC' // Default for InasistenciasDetallado
+  let inasistenciasPeriodo = 'CUATRO' // Default for InasistenciasDetallado
   let showPayloadForm = true // Controla visibilidad del formulario
+
+  function toggleInasistenciasDialog() {
+    showInasistenciasDetallado = !showInasistenciasDetallado;
+    // Set the payload for InasistenciasDetallado when opening the dialog
+    if (showInasistenciasDetallado) {
+      // For now, using hardcoded values as per initial request.
+      // These can be made dynamic based on user selection or other logic later.
+      inasistenciasEstudianteId = '1058078934';
+      inasistenciasNombres = 'AGUDELO MAYA CLAUDIA YURI';
+      inasistenciasAsignatura = 'QUIMIC';
+      inasistenciasPeriodo = 'CUATRO';
+    }
+  }
 
   onMount(() => {
     // loadConcentrador() will now be called from PayloadForm.svelte after it initializes
@@ -199,6 +220,31 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
       </button>
+
+      <!-- Nuevo Botón para mostrar InfoCantDialog -->
+      <button
+        on:click={() => showInfoCantDialog = true}
+        class="p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 {$theme === 'dark' ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}"
+        aria-label="Mostrar Información de Cantidades"
+        title="Información de Cantidades"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </button>
+
+      <!-- Botón para mostrar/ocultar InasistenciasDetallado -->
+      <button
+        on:click={toggleInasistenciasDialog}
+        class="p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 {$theme === 'dark' ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}"
+        title="{showInasistenciasDetallado ? 'Ocultar Inasistencias' : 'Mostrar Inasistencias'}"
+      >
+        {#if showInasistenciasDetallado}
+          Ocultar Inasistencias
+        {:else}
+          Mostrar Inasistencias
+        {/if}
+      </button>
     </div>
 
     <!-- Indicador de tiempo de carga -->
@@ -374,5 +420,25 @@
     <div style="position: fixed; top: 10px; right: 10px; background-color: green; color: white; padding: 5px; border-radius: 4px; font-size: 12px;">
       Dialog is open
     </div>
+  {/if}
+
+  <!-- === DIALOGO DE INFORMACIÓN DE CANTIDADES === -->
+  <InfoCantDialog bind:showDialog={showInfoCantDialog} />
+
+  <!-- Botón para mostrar/ocultar InasistenciasDetallado -->
+  <button
+        on:click={toggleInasistenciasDialog}
+        class="p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 {$theme === 'dark' ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}"
+        title="{showInasistenciasDetallado ? 'Ocultar Inasistencias' : 'Mostrar Inasistencias'}"
+      >
+        {#if showInasistenciasDetallado}
+          Ocultar Inasistencias
+        {:else}
+          Mostrar Inasistencias
+        {/if}
+      </button>
+
+  {#if showInasistenciasDetallado}
+    <InasistenciasDetallado />
   {/if}
 </div>

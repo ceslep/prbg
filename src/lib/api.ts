@@ -79,3 +79,17 @@ export async function fetchNotasDetallado(payload: NotasDetalladoPayload): Promi
   }
   return res.json()
 }
+
+export async function fetchInasistenciasDetallado(payload: InasistenciasDetalladoPayload): Promise<Inasistencia[]> {
+  const res = await fetch(GET_INASISTENCIAS_DETALLADO_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  })
+  if (!res.ok) {
+    throw new Error('Error al obtener inasistencias detalladas: ' + res.status)
+  }
+  return res.json()
+}

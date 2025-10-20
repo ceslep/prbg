@@ -149,3 +149,29 @@ export interface NotaHistory {
     fechahora: string;
     year: string;
 }
+
+export interface InfoCantData {
+  sede: string;
+  nivel: number;
+  numero: number;
+  total_estudiantes: number;
+}
+
+export interface InasistenciasDetalladoPayload {
+  estudiante: string;
+  nombres: string;
+  asignatura: string;
+  periodo: string;
+}
+
+export interface Inasistencia {
+  ind: string;
+  fecha: string;
+  mes: string;
+  dia: string;
+  horas: string;
+  excusa: string;
+  hora_clase: string;
+  detalle: string;
+  fechac: string;
+}
