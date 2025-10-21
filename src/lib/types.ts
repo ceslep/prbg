@@ -174,4 +174,6 @@ export interface Inasistencia {
   hora_clase: string;
   detalle: string;
   fechac: string;
+  excusa_causa: string | null;
+  excusa_motivo: string | null;
 }

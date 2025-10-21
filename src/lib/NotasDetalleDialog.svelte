@@ -13,6 +13,7 @@
 
     export let asignatura: string;
     export let studentName: string;
+    export let onShowInasistencias: (estudianteId: string, nombres: string, asignatura: string, periodo: string) => void;
 
     let showNotasHistoryDialog: boolean = false;
 
@@ -134,6 +135,13 @@
                             title="Ver Historial">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </button>
+                    <button on:click={() => onShowInasistencias(estudianteId, studentName, asignatura, periodo)} class="p-2 rounded-full transition duration-300
+                                {$theme === 'dark' ? 'text-orange-400 hover:bg-gray-700' : 'text-orange-700 hover:bg-gray-200'}"
+                            title="Ver Inasistencias">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </button>
                     <button on:click={theme.toggle} class="p-2 rounded-full transition duration-300

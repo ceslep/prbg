@@ -1,5 +1,5 @@
-import { GET_CONCENTRADOR_ENDPOINT, GET_ASIGNACIONES_ENDPOINT, GET_NOTAS_DETALLADO_ENDPOINT, GET_PERIODOS_ENDPOINT, GET_YEARS_ENDPOINT } from '../../constants'
-import type { ConcentradorParsed, NotasDetalladoPayload, NotaDetalle, Periodo, Year } from './types' // Import ConcentradorParsed
+import { GET_CONCENTRADOR_ENDPOINT, GET_ASIGNACIONES_ENDPOINT, GET_NOTAS_DETALLADO_ENDPOINT, GET_PERIODOS_ENDPOINT, GET_YEARS_ENDPOINT, GET_INASISTENCIAS_DETALLADO_ENDPOINT } from '../../constants'
+import type { ConcentradorParsed, NotasDetalladoPayload, NotaDetalle, Periodo, Year, InasistenciasDetalladoPayload, Inasistencia } from './types' // Import ConcentradorParsed
 
 export interface Sede {
   ind: string;

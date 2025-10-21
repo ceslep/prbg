@@ -22,23 +22,19 @@
   let selectedEstudianteId = ''
   let selectedAsignaturaNombre = ''
   let selectedPeriodoForDialog = '' // New variable to store the clicked period for the dialog
-  let inasistenciasEstudianteId = '1058078934' // Default for InasistenciasDetallado
-  let inasistenciasNombres = 'AGUDELO MAYA CLAUDIA YURI' // Default for InasistenciasDetallado
-  let inasistenciasAsignatura = 'QUIMIC' // Default for InasistenciasDetallado
-  let inasistenciasPeriodo = 'CUATRO' // Default for InasistenciasDetallado
+  let inasistenciasEstudianteId = ''
+  let inasistenciasNombres = ''
+  let inasistenciasAsignatura = ''
+  let inasistenciasPeriodo = ''
   let showPayloadForm = true // Controla visibilidad del formulario
 
-  function toggleInasistenciasDialog() {
-    showInasistenciasDetallado = !showInasistenciasDetallado;
-    // Set the payload for InasistenciasDetallado when opening the dialog
-    if (showInasistenciasDetallado) {
-      // For now, using hardcoded values as per initial request.
-      // These can be made dynamic based on user selection or other logic later.
-      inasistenciasEstudianteId = '1058078934';
-      inasistenciasNombres = 'AGUDELO MAYA CLAUDIA YURI';
-      inasistenciasAsignatura = 'QUIMIC';
-      inasistenciasPeriodo = 'CUATRO';
-    }
+  function handleShowInasistencias(estudianteId: string, nombres: string, asignatura: string, periodo: string) {
+    inasistenciasEstudianteId = estudianteId;
+    inasistenciasNombres = nombres;
+    inasistenciasAsignatura = asignatura;
+    inasistenciasPeriodo = periodo;
+    showInasistenciasDetallado = true;
+    showInasistenciasDetallado = true;
   }
 
   onMount(() => {
@@ -114,6 +110,8 @@
     selectedStudentName = est.nombres
     selectedAsignaturaNombre = selectedAsignatura?.nombre || asignaturaAbrev
     selectedPeriodoForDialog = periodo // Set the clicked period
+
+    console.log('Debug: est.id for Inasistencias', est.id); // Add this line for debugging
 
     const payloadDetalle: NotasDetalladoPayload = {
       estudiante: est.id,
@@ -233,18 +231,7 @@
         </svg>
       </button>
 
-      <!-- Botón para mostrar/ocultar InasistenciasDetallado -->
-      <button
-        on:click={toggleInasistenciasDialog}
-        class="p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 {$theme === 'dark' ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}"
-        title="{showInasistenciasDetallado ? 'Ocultar Inasistencias' : 'Mostrar Inasistencias'}"
-      >
-        {#if showInasistenciasDetallado}
-          Ocultar Inasistencias
-        {:else}
-          Mostrar Inasistencias
-        {/if}
-      </button>
+
     </div>
 
     <!-- Indicador de tiempo de carga -->
@@ -413,6 +400,7 @@
     estudianteId={selectedEstudianteId}
     asignatura={selectedAsignaturaNombre}
     studentName={selectedStudentName}
+    onShowInasistencias={handleShowInasistencias}
   />
 
   <!-- === INDICADOR DE DEBUG (opcional) === -->
@@ -425,20 +413,13 @@
   <!-- === DIALOGO DE INFORMACIÓN DE CANTIDADES === -->
   <InfoCantDialog bind:showDialog={showInfoCantDialog} />
 
-  <!-- Botón para mostrar/ocultar InasistenciasDetallado -->
-  <button
-        on:click={toggleInasistenciasDialog}
-        class="p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 {$theme === 'dark' ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}"
-        title="{showInasistenciasDetallado ? 'Ocultar Inasistencias' : 'Mostrar Inasistencias'}"
-      >
-        {#if showInasistenciasDetallado}
-          Ocultar Inasistencias
-        {:else}
-          Mostrar Inasistencias
-        {/if}
-      </button>
-
   {#if showInasistenciasDetallado}
-    <InasistenciasDetallado />
+    <InasistenciasDetallado
+      estudianteId={inasistenciasEstudianteId}
+      nombres={inasistenciasNombres}
+      asignatura={inasistenciasAsignatura}
+      periodo={inasistenciasPeriodo}
+      bind:showDialog={showInasistenciasDetallado}
+    />
   {/if}
 </div>
