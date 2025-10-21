@@ -172,7 +172,7 @@
           ? 'bg-gray-700 border-gray-600 text-white'
           : 'bg-gray-100 border-gray-300 text-gray-900'}"
         bind:value={$payload.nivel}
-        on:change={() => updateNumeros()}
+        on:change={() => { updateNumeros(); loadConcentrador(true); }}
         {disabled}
       >
         {#each niveles as nivel}
@@ -196,6 +196,7 @@
           ? 'bg-gray-700 border-gray-600 text-white'
           : 'bg-gray-100 border-gray-300 text-gray-900'}"
         bind:value={$payload.numero}
+        on:change={() => loadConcentrador(true)}
         {disabled}
       >
         {#each numeros as numero}

@@ -79,7 +79,7 @@
       {:else if data.length > 0}
         <div class="overflow-x-auto overflow-y-auto max-h-[60vh] rounded-lg border shadow-lg {$theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}">
           <table class="min-w-full text-sm text-left {$theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}">
-            <thead class="text-xs uppercase tracking-wider border-b {$theme === 'dark' ? 'bg-gray-700 text-gray-400 border-gray-600' : 'bg-gray-100 text-gray-600 border-gray-200'}">
+            <thead class="sticky top-0 z-10 text-xs uppercase tracking-wider border-b {$theme === 'dark' ? 'bg-gray-700 text-gray-400 border-gray-600' : 'bg-gray-100 text-gray-600 border-gray-200'}">
               <tr>
                 <th scope="col" class="px-4 py-3">Sede</th>
                 <th scope="col" class="px-4 py-3">Nivel</th>
@@ -88,8 +88,8 @@
               </tr>
             </thead>
             <tbody class="divide-y {$theme === 'dark' ? 'divide-gray-700' : 'divide-gray-200'}">
-              {#each data as item}
-                <tr class="transition duration-200 ease-in-out {$theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50'}">
+              {#each data as item, i}
+                <tr class="transition duration-200 ease-in-out {$theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50'} {i % 2 === 0 ? '' : ($theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100')}">
                   <td class="px-4 py-3 text-center font-medium">{item.sede}</td>
                   <td class="px-4 py-3 text-center">{item.nivel}</td>
                   <td class="px-4 py-3 text-center">{item.numero}</td>
