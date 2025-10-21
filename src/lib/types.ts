@@ -155,6 +155,9 @@ export interface InfoCantData {
   nivel: number;
   numero: number;
   total_estudiantes: number;
+  isTotal?: boolean;
+  isGrandTotal?: boolean;
+  nivelDisplay?: string;
 }
 
 export interface InasistenciasDetalladoPayload {

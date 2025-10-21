@@ -111,7 +111,7 @@
                 {#each inasistencias as inasistencia (inasistencia.ind)}
                   <tr class="{$theme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}">
                     <td class="px-6 py-4 whitespace-nowrap {$theme === 'dark' ? 'text-gray-200' : 'text-gray-900'} {inasistencia.fecha.length < 4 ? 'text-center' : ''}">{inasistencia.fecha}</td>
-                    <td class="px-6 py-4 whitespace-nowrap {$theme === 'dark' ? 'text-gray-200' : 'text-gray-900'} text-center !text-center">{inasistencia.horas}</td>
+                    <td class="px-6 py-4 whitespace-nowrap {$theme === 'dark' ? 'text-gray-200' : 'text-gray-900'} !text-center">{inasistencia.horas}</td>
                     <td class="px-6 py-4 whitespace-nowrap {$theme === 'dark' ? 'text-gray-200' : 'text-gray-900'} {inasistencia.hora_clase.length < 4 ? 'text-center' : ''}">{inasistencia.hora_clase}</td>
                     <td class="px-6 py-4 whitespace-nowrap {$theme === 'dark' ? 'text-gray-200' : 'text-gray-900'}">
                       {#if inasistencia.excusa_motivo}
