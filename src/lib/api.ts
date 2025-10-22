@@ -1,5 +1,5 @@
-import { GET_CONCENTRADOR_ENDPOINT, GET_ASIGNACIONES_ENDPOINT, GET_NOTAS_DETALLADO_ENDPOINT, GET_PERIODOS_ENDPOINT, GET_YEARS_ENDPOINT, GET_INASISTENCIAS_DETALLADO_ENDPOINT } from '../../constants'
-import type { ConcentradorParsed, NotasDetalladoPayload, NotaDetalle, Periodo, Year, InasistenciasDetalladoPayload, Inasistencia } from './types' // Import ConcentradorParsed
+import { GET_CONCENTRADOR_ENDPOINT, GET_ASIGNACIONES_ENDPOINT, GET_NOTAS_DETALLADO_ENDPOINT, GET_PERIODOS_ENDPOINT, GET_YEARS_ENDPOINT, GET_INASISTENCIAS_DETALLADO_ENDPOINT, GET_VALORACIONES_ENDPOINT } from '../../constants'
+import type { ConcentradorParsed, NotasDetalladoPayload, NotaDetalle, Periodo, Year, InasistenciasDetalladoPayload, Inasistencia, ValoracionPayload, Valoracion } from './types' // Import ConcentradorParsed
 
 export interface Sede {
   ind: string;
@@ -90,6 +90,20 @@ export async function fetchInasistenciasDetallado(payload: InasistenciasDetallad
   })
   if (!res.ok) {
     throw new Error('Error al obtener inasistencias detalladas: ' + res.status)
+  }
+  return res.json()
+}
+
+export async function fetchValoraciones(payload: ValoracionPayload): Promise<Valoracion> {
+  const res = await fetch(GET_VALORACIONES_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  })
+  if (!res.ok) {
+    throw new Error('Error al obtener valoraciones: ' + res.status)
   }
   return res.json()
 }

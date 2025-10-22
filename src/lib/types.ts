@@ -180,3 +180,62 @@ export interface Inasistencia {
   excusa_causa: string | null;
   excusa_motivo: string | null;
 }
+
+export interface ValoracionPayload {
+  estudiante: string;
+  asignatura: string;
+  periodo: string;
+  year: string;
+}
+
+export interface Valoracion {
+  valoracion: number;
+  nota1: number | null;
+  nota2: number | null;
+  nota3: number | null;
+  nota4: number | null;
+  nota5: number | null;
+  nota6: number | null;
+  nota7: number | null;
+  nota8: number | null;
+  nota9: number | null;
+  nota10: number | null;
+  nota11: number | null;
+  nota12: number | null;
+  porcentaje1: number | null;
+  porcentaje2: number | null;
+  porcentaje3: number | null;
+  porcentaje4: number | null;
+  porcentaje5: number | null;
+  porcentaje6: number | null;
+  porcentaje7: number | null;
+  porcentaje8: number | null;
+  porcentaje9: number | null;
+  porcentaje10: number | null;
+  porcentaje11: number | null;
+  porcentaje12: number | null;
+  aspecto1: string | null;
+  aspecto2: string | null;
+  aspecto3: string | null;
+  aspecto4: string | null;
+  aspecto5: string | null;
+  aspecto6: string | null;
+  aspecto7: string | null;
+  aspecto8: string | null;
+  aspecto9: string | null;
+  aspecto10: string | null;
+  aspecto11: string | null;
+  aspecto12: string | null;
+  fecha1: string | null;
+  fecha2: string | null;
+  fecha3: string | null;
+  fecha4: string | null;
+  fecha5: string | null;
+  fecha6: string | null;
+  fecha7: string | null;
+  fecha8: string | null;
+  fecha9: string | null;
+  fecha10: string | null;
+  fecha11: string | null;
+  fecha12: string | null;
+}
