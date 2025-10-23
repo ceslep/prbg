@@ -1,5 +1,5 @@
-import { GET_CONCENTRADOR_ENDPOINT, GET_ASIGNACIONES_ENDPOINT, GET_NOTAS_DETALLADO_ENDPOINT, GET_PERIODOS_ENDPOINT, GET_YEARS_ENDPOINT, GET_INASISTENCIAS_DETALLADO_ENDPOINT, GET_VALORACIONES_ENDPOINT } from '../../constants'
-import type { ConcentradorParsed, NotasDetalladoPayload, NotaDetalle, Periodo, Year, InasistenciasDetalladoPayload, Inasistencia, ValoracionPayload, Valoracion } from './types' // Import ConcentradorParsed
+import { GET_CONCENTRADOR_ENDPOINT, GET_ASIGNACIONES_ENDPOINT, GET_NOTAS_DETALLADO_ENDPOINT, GET_PERIODOS_ENDPOINT, GET_YEARS_ENDPOINT, GET_INASISTENCIAS_DETALLADO_ENDPOINT, GET_VALORACIONES_ENDPOINT, GET_CONCENTRADOR_AREAS_ENDPOINT, GET_NOTAS_DETALLADO_AREAS_ENDPOINT } from '../../constants'
+import type { ConcentradorParsed, ConcentradorAreasParsed, NotasDetalladoPayload, NotaDetalle, Periodo, Year, InasistenciasDetalladoPayload, Inasistencia, ValoracionPayload, Valoracion } from './types' // Import ConcentradorParsed
 
 export interface Sede {
   ind: string;
@@ -52,7 +52,7 @@ export async function fetchYears(): Promise<Year[]> {
   return res.json()
 }
 
-export async function fetchConcentrador(payload: ConcentradorPayload = defaultConcentradorPayload): Promise<ConcentradorResponse> {
+export async function fetchConcentrador(payload: ConcentradorPayload = defaultConcentradorPayload): Promise<ConcentradorParsed> {
   const res = await fetch(GET_CONCENTRADOR_ENDPOINT, {
     method: 'POST',
     headers: {
@@ -62,6 +62,20 @@ export async function fetchConcentrador(payload: ConcentradorPayload = defaultCo
   })
   if (!res.ok) {
     throw new Error('Error al obtener concentrador: ' + res.status)
+  }
+  return res.json()
+}
+
+export async function fetchConcentradorAreas(payload: ConcentradorPayload = defaultConcentradorPayload): Promise<ConcentradorAreasParsed> {
+  const res = await fetch(GET_CONCENTRADOR_AREAS_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  })
+  if (!res.ok) {
+    throw new Error('Error al obtener concentrador por áreas: ' + res.status)
   }
   return res.json()
 }
@@ -76,6 +90,20 @@ export async function fetchNotasDetallado(payload: NotasDetalladoPayload): Promi
   })
   if (!res.ok) {
     throw new Error('Error al obtener notas detalladas: ' + res.status)
+  }
+  return res.json()
+}
+
+export async function fetchNotasDetalladoAreas(payload: NotasDetalladoPayload): Promise<NotaDetalle[]> {
+  const res = await fetch(GET_NOTAS_DETALLADO_AREAS_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  })
+  if (!res.ok) {
+    throw new Error('Error al obtener notas detalladas por área: ' + res.status)
   }
   return res.json()
 }

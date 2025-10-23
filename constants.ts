@@ -11,6 +11,8 @@ export const GET_YEARS_ENDPOINT = `${API_BASE_URL}/getYearsData.php`;
 export const GET_INFOCANT_ENDPOINT = `${API_BASE_URL}/getInfoCant.php`; // New endpoint for InfoCant
 export const GET_INASISTENCIAS_DETALLADO_ENDPOINT = `${API_BASE_URL}/inasistenciasDetallado.php`;
 export const GET_VALORACIONES_ENDPOINT = `${API_BASE_URL}/getValoraciones.php`;
+export const GET_CONCENTRADOR_AREAS_ENDPOINT = `${API_BASE_URL}/getConcentradorAreas.php`;
+export const GET_NOTAS_DETALLADO_AREAS_ENDPOINT = `${API_BASE_URL}/getNotasDetalladoAreas.php`;
 
 // Ejemplo de uso (fetch):
 // fetch(GET_CONCENTRADOR_ENDPOINT)

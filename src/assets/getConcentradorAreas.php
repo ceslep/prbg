@@ -1,95 +1,173 @@
 <?php
+// Orígenes permitidos
+$allowed_origins = [
+    "http://localhost:5173",
+    "http://localhost:4173",
+    "https://app.iedeoccidente.com"
+];
 
-    header("Access-Control-Allow-Origin: *");
-    require_once("datos_conexion.php");
-    
-    $mysqli=new mysqli($host,$user,$pass,$database);
-    $mysqli->query("SET NAMES utf8");
-    $mysqli->set_charset('utf8');
-    $datos=json_decode(file_get_contents("php://input"));    
-	$nivel=$datos->nivel;
-    $numero=$datos->numero;
-	$periodo=$datos->periodo;
-	$asignacion=$datos->Asignacion;
-	$year=$datos->year;
-	
-	
-	$sql1="select porcentajes_area_colegio.abreviatura as asignatura,porcentajes_area_colegio.abreviatura,asignacion_asignaturas.docente,porcentajes_area_colegio.abreviatura as materia,if(parametros_informe.orden is null,200,parametros_informe.orden) as ordenar from porcentajes_area_colegio";
-    $sql1.=" left join asignacion_asignaturas on porcentajes_area_colegio.asignatura=asignacion_asignaturas.asignatura and porcentajes_area_colegio.year=asignacion_asignaturas.year";
-	$sql1.=" left join parametros_informe on asignacion_asignaturas.asignatura=parametros_informe.codigo_materia";
-	$sql1.=" inner join docentes on asignacion_asignaturas.docente=docentes.identificacion";
-	$sql1.=" where asignacion_asignaturas.nivel='$nivel' and asignacion_asignaturas.numero='$numero' and asignacion_asignaturas.visible='S' and asignacion='$asignacion'";
-    $sql1.=" and asignacion_asignaturas.year=$year";
-    $sql1.=" and parametros_informe.year=$year";
-    $sql1.=" group by porcentajes_area_colegio.area";
-	$sql1.=" order by ordenar";
-   
-  //  echo json_encode(array("sql"=>$sql1));exit(0);
-    $html='<input placeholder="Buscar Estudiante" type="search" id="searchConcentrador" class="form-control searchConcentrador" autofocus oninput=filterTable(this.value)>';
-	$html.="<div class='table-responsive'><table class='table table-bordered table-hover table-striped tableconcentrador$datos->tipo' border='1' id='tableconcentrador$datos->tipo'>";
-	$html.="<thead>";
-	$html.="<th style='text-align:center;min-width:200px;vertical-align:middle;'>Nombres Estudiantes";
-	$html.="</th>";
-	$rasignaturas=$mysqli->query($sql1);
-	$cantidad_asignaturas=0;
-	while($asignaturas=$rasignaturas->fetch_assoc()){
-	
-		$html.="<th style='padding:0;margin-bottom:5px;min-width:55px;text-align:center;vertical-align:middle;'>";
-		$html.=sprintf("<div style='min-width:5px;text-align:center;vertical-align:middle;'><span  id='conc_%s' class='fs-7 p-0' data-docente='%s'>%s</span></div>",$asignaturas['docente'],$asignaturas['docente'],$asignaturas['asignatura']);
-		$html.=sprintf("<br/><div id='spor_%s'></div></th>",$asignaturas['materia']); 
-		$array_asignaturas[]=$asignaturas;
-	}
-	//echo json_encode(array("ASIGANTURAS"=>$array_asignaturas));exit(0);
-	$html.="</thead>";
-    if ($periodo!="CINCO")
-    $sql2="select estudiante,nombres,nombres as nombres2 from estugrupos";
-    else {
-    $sql2="select estudiante,concat_ws('','',nombres) as nombres,nombres as nombres2 from estugrupos";
-    
+// Verifica si la cabecera Origin existe y está permitida
+if (isset($_SERVER['HTTP_ORIGIN']) && in_array($_SERVER['HTTP_ORIGIN'], $allowed_origins)) {
+    header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
+    header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+    header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+    header("Access-Control-Allow-Credentials: true");
+}
+
+// Manejo de preflight (OPTIONS) para CORS
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+header('Content-Type: application/json');
+
+// Conexión a BD
+require_once "datos_conexion.php";
+
+$mysqli = new mysqli($host, $user, $pass, $database);
+$mysqli->query("SET NAMES utf8");
+$mysqli->set_charset('utf8');
+
+// 📥 Datos recibidos
+$datos = json_decode(file_get_contents("php://input"));
+$nivel      = $datos->nivel ?? null;
+$numero     = $datos->numero ?? null;
+$periodo    = $datos->periodo ?? null; // This 'periodo' is for the payload, not for filtering grades
+$asignacion = $datos->Asignacion ?? null;
+$YEAR       = $datos->year ?? null;
+$activos    = $datos->activos ?? false;
+
+// Initialize response structure
+$response = [
+    'estudiantes' => [],
+    'areas' => [],
+    'areasOrden' => []
+];
+
+// ----------------------
+// 1. Consulta áreas y construye areasOrden
+// ----------------------
+$sql1 = "
+    SELECT 
+        pa.abreviatura AS abreviatura,
+        pa.area AS nombre,
+        IF(pa.orden IS NULL, 200, pa.orden) AS ordenar
+    FROM porcentajes_area_colegio pa
+    WHERE pa.nivel = ?
+      AND pa.year = ?
+    GROUP BY pa.area, pa.abreviatura, ordenar
+    ORDER BY ordenar
+";
+
+$stmt_areas = $mysqli->prepare($sql1);
+$stmt_areas->bind_param("is", $nivel, $YEAR);
+$stmt_areas->execute();
+$rareas = $stmt_areas->get_result();
+
+$array_areas_data = [];
+while ($area_row = $rareas->fetch_assoc()) {
+    $response['areas'][] = [
+        'abreviatura' => $area_row['abreviatura'],
+        'nombre' => $area_row['nombre'],
+        'docente' => null // Docente for area is not directly available, set to null for now
+    ];
+    $response['areasOrden'][] = $area_row['abreviatura'];
+    $array_areas_data[] = $area_row;
+}
+$rareas->free();
+
+// ----------------------
+// 2. Estudiantes
+// ----------------------
+$sql2 = "
+    SELECT estudiante, nombres, grado 
+    FROM estugrupos 
+    WHERE nivel = ? AND numero = ? AND asignacion = ? AND year = ?
+";
+
+$current_year = date('Y');
+if ($activos || $YEAR === $current_year) { // Use $activos from payload
+    $sql2 .= " AND activo = 'S'";
+}
+$sql2 .= " ORDER BY nombres";
+
+$stmt_estudiantes = $mysqli->prepare($sql2);
+$stmt_estudiantes->bind_param("ssis", $nivel, $numero, $asignacion, $YEAR);
+$stmt_estudiantes->execute();
+$restudiantes = $stmt_estudiantes->get_result();
+
+    // Prepare statement for aggregated area grades per period
+    $stmt_area_grades = $mysqli->prepare("
+        SELECT
+            pac.area AS area_abreviatura,
+            n.periodo,
+            SUM(n.valoracion * (pac.porcentaje / 100)) / SUM(pac.porcentaje / 100) AS valoracion_area_periodo
+        FROM notas n
+        JOIN porcentajes_area_colegio pac ON n.asignatura = pac.asignatura AND n.year = pac.year AND n.grado = ?
+        WHERE n.year = ? AND n.estudiante = ?
+        GROUP BY pac.area, n.periodo
+    ");
+
+while ($estudiante_row = $restudiantes->fetch_assoc()) {
+    $estudianteId = $estudiante_row['estudiante'];
+    $nombres = $estudiante_row['nombres'];
+    $grado = $estudiante_row['grado'];
+
+    // Fetch aggregated area grades for the current student
+    $stmt_area_grades->bind_param("sis", $grado, $YEAR, $estudianteId);
+    $stmt_area_grades->execute();
+    $result_area_grades = $stmt_area_grades->get_result();
+
+    $area_grades_by_period = [];
+    while ($row = $result_area_grades->fetch_assoc()) {
+        $area_grades_by_period[$row['area_abreviatura']][$row['periodo']] = (float)$row['valoracion_area_periodo'];
     }
-    
-	$sql2.=" where nivel='$nivel' and numero='$numero' and activo='S' and asignacion='$asignacion' and year='$datos->year'";
-	$sql2.=" order by nombres2";
-   /*  echo json_encode($sql2);exit(0); */
-	$restudiantes=$mysqli->query($sql2);
-		
-		
-		
-		while($datos=$restudiantes->fetch_assoc()){
-			
-		$html.="<tr>";	
-		$html.="<td style='vertical-align:middle;'>";
-		$html.="<div>";
-		$html.="<em href='#' class='fs-7'>";
-		$html.=$datos['nombres'];
-		$html.="</em>";
-		$html.="</div>";
-		$html.="</td>";
-		
-		foreach($array_asignaturas as $asignatura){
-			$html.="<td style='vertical-align:middle;'>";
-			$html.=sprintf("<span  data-estudiante='%s' data-asignatura='%s' data-periodo='%s' data-docente='%s' data-nombres='%s' id='concentrador_%s_%s' title='%s &rarr; %s'><div class='fs-6' id='estudiante_%s_%s' style='text-align:center;'>",$datos['estudiante'],$asignatura['asignatura'],$periodo,$asignatura['docente'],$datos['nombres'],$datos['estudiante'],$asignatura['asignatura'],$datos['nombres2'],$asignatura['asignatura'],$datos['estudiante'],$asignatura['materia']);
-			$html.="</div></span>";
-            $html.="</td>";
-      
-            
-            /**/
-           // $html.="<td style='width:0px;'></td>";
-			/**/
-		}
-		$html.="</tr>";	
-				
 
-				
-		}
-		
-	
-	$html.="</table>";
-	$html.="</div>";
-   
-	echo json_encode(array("html"=>$html));
-	$rasignaturas->free();
-	$restudiantes->free();
-	$mysqli->close();
+    $areas_list = [];
+    foreach ($array_areas_data as $area_data) {
+        $area_abreviatura = $area_data['abreviatura'];
+        $periodos_valoracion = [];
+        $periodos_sum_for_def = [];
 
+        foreach (['UNO', 'DOS', 'TRES', 'CUATRO'] as $p) {
+            if (isset($area_grades_by_period[$area_abreviatura][$p])) {
+                $final_period_valoracion = $area_grades_by_period[$area_abreviatura][$p];
+                $periodos_valoracion[] = [
+                    'periodo' => $p,
+                    'valoracion' => $final_period_valoracion
+                ];
+                $periodos_sum_for_def[] = $final_period_valoracion;
+            }
+        }
+
+        // Calculate DEF (Definitive) for the area
+        if (!empty($periodos_sum_for_def)) {
+            $def_valoracion = array_sum($periodos_sum_for_def) / count($periodos_sum_for_def);
+            $periodos_valoracion[] = [
+                'periodo' => 'DEF',
+                'valoracion' => $def_valoracion
+            ];
+        }
+
+        $areas_list[] = [
+            'area' => $area_abreviatura,
+            'periodos' => $periodos_valoracion,
+            'estudianteId' => $estudianteId,
+            'docenteId' => null // Docente for area is not directly available
+        ];
+    }
+
+    $response['estudiantes'][] = [
+        'id' => $estudianteId,
+        'nombres' => $nombres,
+        'areas' => $areas_list
+    ];
+}
+$stmt_estudiantes->close();
+$stmt_area_grades->close();
+$restudiantes->free();
+$mysqli->close();
+
+echo json_encode($response);
 ?>

@@ -38,6 +38,31 @@ export interface ConcentradorParsed {
   asignaturas?: Asignatura[];
 }
 
+export interface AreaNota {
+  area: string
+  periodos: PeriodoValoracion[]
+  estudianteId: string
+  docenteId?: string
+}
+
+export interface EstudianteRowArea {
+  id: string
+  nombres: string
+  areas: AreaNota[]
+}
+
+export interface Area {
+  abreviatura: string;
+  nombre: string;
+  docente: string;
+}
+
+export interface ConcentradorAreasParsed {
+  estudiantes: EstudianteRowArea[];
+  areasOrden: string[];
+  areas?: Area[];
+}
+
 export interface NotasDetalladoPayload {
   estudiante: string;
   nombres: string;
